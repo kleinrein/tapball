@@ -23,6 +23,7 @@ local background
 local grass
 local ball
 local grassShape
+local coin
 
 -- tables
 local coinTable = {}
@@ -38,10 +39,11 @@ local coinTimer
 -- sounds
 local jump = audio.loadSound( "audio/jump.mp3" )
 local coinSound = audio.loadSound( "audio/coin.mp3" )
+local gameOverSound = audio.loadSound( "audio/gameover.mp3" )
 
 -- constants
-local gravity = 25
-local forceHit = -160
+local gravity = 30
+local forceHit = -10
 
 --------------------------------------------
 
@@ -54,7 +56,6 @@ function updateScore(s)
 end
 
 function spawnCoin()
-
   local options =
   {
     width = 20,
@@ -74,7 +75,7 @@ function spawnCoin()
     loopDirection = "bounce"
   }
 
-  local coin = display.newSprite( coinSheet, sequenceData )
+  coin = display.newSprite( coinSheet, sequenceData )
   math.random()
   coin.x = math.random ( 10 , display.contentWidth - 10)
   coin.y = math.random (display.contentHeight - 150)
@@ -82,29 +83,32 @@ function spawnCoin()
   coin:play()
 
   local function hitCoin(event)
-    -- play coin sound
-    audio.play(coinSound)
+    if event.other.name == 'ball' then
 
-    updateScore(5)
-    transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
-    transition.dissolve( coin )
+      -- play coin sound
+      audio.play(coinSound)
 
-    display.remove( coin )
+      updateScore(5)
+      transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
+      transition.dissolve( coin )
 
-    -- new coin timer
-    math.random()
-    local randTime = math.random(1500, 4000)
-    coinTimer = timer.performWithDelay( randTime, spawnCoin() )
+      display.remove( coin )
 
-    -- spawn gem or not
-    local randNum = math.random(2)
-    if randNum == 1 then
-      spawnGem()
+      -- new coin timer
+      math.random()
+      local randTime = math.random(1500, 4000)
+      coinTimer = timer.performWithDelay( randTime, spawnCoin() )
+
+      -- spawn gem or not
+      local randNum = math.random(2)
+      if randNum == 1 then
+        spawnGem()
+      end
     end
   end
 
   local function addBodyToCoin()
-    physics.addBody( coin, "static", { isSensor = true} )
+    physics.addBody( coin, "static", { isSensor = true, radius = 10} )
     coin:addEventListener( "collision", hitCoin )
   end
 
@@ -160,34 +164,6 @@ function spawnGem()
 end
 
 
-
-function multiBall()
-  local multiball = display.newImageRect( "ball.png", 90, 90 )
-  multiball.x, multiball.y = 160, -100
-  multiball.name = "multiball"
-  physics.addBody( multiball, { bounce = 0.5, friction = 0.3, density = .25, radius = 50} )
-
-  local function tapBall(event)
-    local force
-    if event.x < ball.x then
-      force = 5
-    else
-      force = -5
-    end
-
-    transition.to( multiball, { time = 10, xScale = 1.1, yScale = 1.1, transition=easing.outQuad } )
-    transition.from( multiball, {time = 10, xScale = 0.9, yScale = 0.9, transition = easing.outQuad } )
-
-    multiball:applyLinearImpulse(force, forceHit, multiball.x, multiball.y)
-    audio.play(jump)
-    updateScore(1)
-  end
-
-  multiball:addEventListener("tap", tapBall)
-end
-
-
-
 function scene:create( event )
 
   -- Called when the scene's view does not exist.
@@ -219,7 +195,7 @@ function scene:create( event )
   ball.linearDamping = 10000
 
   -- add physics to the ball
-  physics.addBody( ball, { bounce = 0.7, friction = 0.3, density = 1.0, radius = 50})
+  physics.addBody( ball, { bounce = 0.7, friction = 0.3, density = 1.0, radius = 40})
 
   local function push( event )
 
@@ -238,7 +214,7 @@ function scene:create( event )
     transition.to( ball, { time = 10, xScale = 1.1, yScale = 1.1, transition=easing.outQuad } )
     transition.from( ball, {time = 10, xScale = 0.9, yScale = 0.9, transition = easing.outQuad } )
 
-    ball:applyForce( force, -4500, ball.x, ball.y )
+    ball:applyForce( force, -3250, ball.x, ball.y )
     audio.play( jump )
     updateScore(1)
   end
@@ -257,7 +233,8 @@ function scene:create( event )
   local function onCollision(self, event)
     -- end game if ball collide with grass
     if event.other.name == "grass" then
-      endgame()
+      audio.play( gameOverSound )
+      -- endgame()
     end
   end
 
@@ -407,8 +384,10 @@ function lostDialog()
   print( "lostdialog " .. tostring(lost) )
   local dialogGroup = display.newGroup()
 
+  -- TODO fix removing event listeners properly
   -- remove event listener for ball
   ball:removeEventListener( "collision" )
+  ball.name = 'ball_lost'
 
   -- dialog
   local dialog = display.newRect( 0, 0, display.contentWidth, display.contentHeight + 100 )

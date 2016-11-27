@@ -26,7 +26,6 @@ end
     chooseGemPowers
 --]]
 function chooseGemPowers( gemPower )
-  print( gemPower )
 
   if gemPower == "SpikedEnemy" then
     spawnEnemy()
@@ -74,7 +73,7 @@ function spawnEnemy()
       spikeball.x, spikeball.y = spikeballX, -50
       spikeball.name = "spikeball"
 
-      physics.addBody( spikeball, { bounce = 0.6, friction = 0.3, density = 0.2, radius = 25})
+      physics.addBody( spikeball, { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
 
       spikeball:addEventListener("collision", spiked)
   end
@@ -99,7 +98,9 @@ function coinRain()
   coinRainAlert.fill = { 0, 1, 0.5 }
 
   local function showCoinRain()
-
+    for i=1,15 do
+      timer.performWithDelay( 1, spawnExtraCoin(coinX) )
+    end
   end
 
   -- alert coin rain transition
@@ -122,7 +123,6 @@ function coinBlaze()
     for i=1,15 do
       timer.performWithDelay( 1, spawnExtraCoin() )
     end
-
   end
 
   local function coinBlazeTimer()
@@ -158,7 +158,7 @@ function coinBlaze()
   coinBlazeGroup:insert( timerValText )
 end
 
-function spawnExtraCoin()
+function spawnExtraCoin(x)
   local options =
   {
     width = 20,
@@ -181,28 +181,39 @@ function spawnExtraCoin()
 
   local coin = display.newSprite( coinSheet, sequenceData )
 
-  coin.x = math.random ( 10 , display.contentWidth - 10)
-  coin.y = math.random (display.contentHeight - 150)
+  if x ~= nil then
+    coin.x = x + math.random ( -5, 5)
+    coin.y = math.random(-1000, -700 )
+  else
+    coin.x = math.random ( 10 , display.contentWidth - 10 )
+    coin.y = math.random( 100, display.contentHeight - 100 )
+  end
 
   coin:play()
 
   local function hitCoin(event)
-    -- play coin sound
-    audio.play(coinSound)
+    if event.other.name == 'ball' then
+      -- play coin sound
+      audio.play(coinSound)
 
-    updateScore(5)
-    transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
-    transition.dissolve( coin )
+      updateScore(5)
+      transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
+      transition.dissolve( coin )
 
-    display.remove( coin )
+      display.remove( coin )
+    end
   end
 
   local function addBodyToCoin()
-    physics.addBody( coin, "static", { isSensor = true} )
+    if x ~= nil then
+      physics.addBody( coin, { isSensor = true, friction = 0.3, density = .001, radius = 10}  )
+    else
+      physics.addBody( coin, "static", { isSensor = true, radius = 10} )
+    end
     coin:addEventListener( "collision", hitCoin )
   end
 
-  timer.performWithDelay( 50, addBodyToCoin )
+  timer.performWithDelay( 1, addBodyToCoin )
 
   -- add coin to table for tracking purposes
   coinExtraTable[#coinExtraTable+1] = coin
@@ -216,7 +227,7 @@ function displayPowerText(text)
     display.remove( powerText )
   end
 
-  transition.scaleTo( powerText, { xScale = 5, yScale = 5, alpha=0, time = 600, transition = easing.inOutExpo, onComplete=removePowerText } )
+  transition.scaleTo( powerText, { xScale = 3, yScale = 3, alpha=0, time = 600, transition = easing.inOutExpo, onComplete=removePowerText } )
 end
 
 -- return powerups

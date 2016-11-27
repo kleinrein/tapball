@@ -6,6 +6,7 @@
 
 local composer = require( "composer" )
 local scene = composer.newScene()
+local physics = require( "physics" )
 
 -- include Corona's "widget" library
 local widget = require "widget"
@@ -27,6 +28,11 @@ end
 function scene:create( event )
 	local sceneGroup = self.view
 
+	physics.start()
+  	physics. pause()
+	  physics.setGravity(0, 20)
+	  -- physics.setDrawMode( "hybrid" )
+
 	-- Called when the scene's view does not exist.
 	--
 	-- INSERT code here to initialize the scene
@@ -39,14 +45,23 @@ function scene:create( event )
 	background.x = 0 + display.screenOriginX
 	background.y = 0 + display.screenOriginY
 
-	-- create/position logo/title image on upper-half of the screen
-	local titleLogo = display.newImageRect( "logo.png", 226, 120 )
+   -- load the ball
+   local ball = display.newImageRect( "ball.png", 60, 60 )
+   ball.x = display.contentCenterX + math.random(-20, 20)
+   ball.y = 60
+
+   physics.addBody( ball, { bounce = 1, friction = 0.6, density = 1.0, radius = 10.0})
+
+
+	-- create a logo
+	local titleLogo = display.newImageRect( "logo.png", 180, 25 )
 	titleLogo.x = display.contentCenterX
-	titleLogo.y = 100
+	titleLogo.y = 120
 
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{
 		label="",
+		labelAlign="center",
 		labelColor = { default={255}, over={128} },
 		defaultFile="graphics/play-btn.png",
 		overFile="graphics/play-btn-hover.png",
@@ -56,15 +71,24 @@ function scene:create( event )
 	playBtn.x = display.contentCenterX
 	playBtn.y = display.contentHeight - 125
 
+	-- create a physics body 
+	local playBtnBody = display.newRect(display.contentCenterX, display.contentHeight - 125, 125, 60)
+	playBtnBody.alpha = 0
+	physics.addBody( playBtnBody, "static", { density = 1, friction = 1} )
+
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
 	sceneGroup:insert( titleLogo )
 	sceneGroup:insert( playBtn )
+	sceneGroup:insert( ball )
+	sceneGroup:insert( playBtnBody )
 end
 
 function scene:show( event )
 	local sceneGroup = self.view
 	local phase = event.phase
+
+	physics.start()
 
 	composer.removeHidden()
 
