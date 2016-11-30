@@ -201,9 +201,9 @@ function scene:create( event )
 
     local force
     if event.x < ball.x then
-      force = 500
+      force = 400
     else
-      force = -500
+      force = -400
     end
 
     if event.x == ball.x then

@@ -46,7 +46,7 @@ function spawnEnemy()
   -- warn player
   local spikeballX = math.random ( 5 , display.contentWidth - 5)
 
-  local spikeballWarn = display.newRect( spikeballX, 0, 5, 3 )
+  local spikeballWarn = display.newRect( spikeballX, 0, 10, 2 )
   spikeballWarn.fill = { 1, 0, 0.5 }
 
   local spikeball = nil
@@ -79,7 +79,7 @@ function spawnEnemy()
   end
 
   -- warn enemy transition
-  transition.to( spikeballWarn, { time=2000, xScale=6, alpha=0, onComplete=showSpikeball } )
+  transition.to( spikeballWarn, { time=2000, xScale=8, alpha=0, onComplete=showSpikeball } )
 end
 
 --[[
@@ -94,7 +94,7 @@ function coinRain()
   -- warn player
   local coinX = math.random ( 5 , display.contentWidth - 5)
 
-  local coinRainAlert = display.newRect( coinX, 0, 5, 3 )
+  local coinRainAlert = display.newRect( coinX, 0, 10, 2 )
   coinRainAlert.fill = { 0, 1, 0.5 }
 
   local function showCoinRain()
@@ -104,7 +104,7 @@ function coinRain()
   end
 
   -- alert coin rain transition
-  transition.to( coinRainAlert, { time=2000, xScale=6, alpha=0, onComplete=showCoinRain } )
+  transition.to( coinRainAlert, { time=2000, xScale=8, alpha=0, onComplete=showCoinRain, transition=easing.outExpo } )
 end
 
 --[[

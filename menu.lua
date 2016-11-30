@@ -30,7 +30,7 @@ function scene:create( event )
 
 	physics.start()
   	physics. pause()
-	  physics.setGravity(0, 20)
+	physics.setGravity(0, 20)
 	  -- physics.setDrawMode( "hybrid" )
 
 	-- Called when the scene's view does not exist.
@@ -45,18 +45,10 @@ function scene:create( event )
 	background.x = 0 + display.screenOriginX
 	background.y = 0 + display.screenOriginY
 
-   -- load the ball
-   local ball = display.newImageRect( "ball.png", 60, 60 )
-   ball.x = display.contentCenterX + math.random(-20, 20)
-   ball.y = 60
-
-   physics.addBody( ball, { bounce = 1, friction = 0.6, density = 1.0, radius = 10.0})
-
-
 	-- create a logo
-	local titleLogo = display.newImageRect( "logo.png", 180, 25 )
-	titleLogo.x = display.contentCenterX
-	titleLogo.y = 120
+   local titleLogo = display.newImageRect( "logo.png", 180, 25 )
+   titleLogo.x = display.contentCenterX
+   titleLogo.y = 120
 
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{
@@ -70,11 +62,34 @@ function scene:create( event )
 	}
 	playBtn.x = display.contentCenterX
 	playBtn.y = display.contentHeight - 125
+	playBtn.name = "playBtn"
 
 	-- create a physics body 
 	local playBtnBody = display.newRect(display.contentCenterX, display.contentHeight - 125, 125, 60)
 	playBtnBody.alpha = 0
 	physics.addBody( playBtnBody, "static", { density = 1, friction = 1} )
+
+
+	-- load the ball
+   local ball = display.newImageRect( "ball.png", 60, 60 )
+   ball.x = display.contentCenterX + math.random(-20, 20)
+   ball.y = 60
+
+   local function addBodyToBall()
+	physics.addBody( ball, { bounce = 1, friction = 0.6, density = 1.0, radius = 10.0})
+   end
+
+   local function onCollision(self, event)
+   		local function goUp()
+		   transition.to( playBtn, { time=150, y=playBtn.y - 5} )
+		   end
+      transition.to( playBtn, { time=150, y=playBtn.y + 5, onComplete=goUp, transition=easing.outExpo } )
+  end
+
+   ball.collision = onCollision
+   ball:addEventListener( "collision" )
+
+   timer.performWithDelay( 250, addBodyToBall )
 
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
