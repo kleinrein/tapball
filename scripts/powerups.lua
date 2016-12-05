@@ -8,7 +8,11 @@
 local powerups = {}
 
 -- tables
-local coinExtraTable = {}
+local coinRainTable = {}
+local coinBlazeTable = {}
+
+-- groups
+local coinBlazeGroup = nil
 
 -- gem powers
 local gemPowers = { "SpikedEnemy", "coinBlaze", "coinRain" }
@@ -26,7 +30,7 @@ end
     chooseGemPowers
 --]]
 function chooseGemPowers( gemPower )
-
+  
   if gemPower == "SpikedEnemy" then
     spawnEnemy()
   elseif gemPower == "coinBlaze" then
@@ -41,12 +45,12 @@ end
     spawnEnemy
 --]]
 function spawnEnemy()
-  displayPowerText( "ENEMY" )
+  displayPowerText( "WATCH OUT" )
 
   -- warn player
   local spikeballX = math.random ( 5 , display.contentWidth - 5)
 
-  local spikeballWarn = display.newRect( spikeballX, 0, 10, 2 )
+  local spikeballWarn = display.newRect( spikeballX, 0, 10, 7 )
   spikeballWarn.fill = { 1, 0, 0.5 }
 
   local spikeball = nil
@@ -70,7 +74,7 @@ function spawnEnemy()
   local function showSpikeball()
       spikeball = display.newImageRect( "spikeball.png", 20, 20 )
 
-      spikeball.x, spikeball.y = spikeballX, -50
+      spikeball.x, spikeball.y = spikeballX, -10
       spikeball.name = "spikeball"
 
       physics.addBody( spikeball, { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
@@ -79,7 +83,7 @@ function spawnEnemy()
   end
 
   -- warn enemy transition
-  transition.to( spikeballWarn, { time=2000, xScale=8, alpha=0, onComplete=showSpikeball } )
+  transition.to( spikeballWarn, { time=2000, xScale=8, alpha=0, onComplete=showSpikeball, transition=easing.inQuad } )
 end
 
 --[[
@@ -94,7 +98,7 @@ function coinRain()
   -- warn player
   local coinX = math.random ( 5 , display.contentWidth - 5)
 
-  local coinRainAlert = display.newRect( coinX, 0, 10, 2 )
+  local coinRainAlert = display.newRect( coinX, 0, 10, 7 )
   coinRainAlert.fill = { 0, 1, 0.5 }
 
   local function showCoinRain()
@@ -104,7 +108,7 @@ function coinRain()
   end
 
   -- alert coin rain transition
-  transition.to( coinRainAlert, { time=2000, xScale=8, alpha=0, onComplete=showCoinRain, transition=easing.outExpo } )
+  transition.to( coinRainAlert, { time=2500, xScale=8, alpha=0, onComplete=showCoinRain, transition=easing.inQuad } )
 end
 
 --[[
@@ -112,7 +116,7 @@ end
 --]]
 function coinBlaze()
   -- coin rain group
-  local coinBlazeGroup = display.newGroup()
+  coinBlazeGroup = display.newGroup()
 
   displayPowerText( "COINBLAZE" )
   
@@ -133,13 +137,13 @@ function coinBlaze()
 
     if timerVal == 0 then
       -- clear coins
-      for i = 1, #coinExtraTable do
+      for i = 1, #coinBlazeTable do
         print( "remove extra coins.." )
-        display.remove( coinExtraTable[i] )
+        display.remove( coinBlazeTable[i] )
       end
 
       -- clear table
-      coinExtraTable = {}
+      coinBlazeTable = {}
 
       -- clear coinBlazeGroup
       coinBlazeGroup:removeSelf()
@@ -216,7 +220,12 @@ function spawnExtraCoin(x)
   timer.performWithDelay( 1, addBodyToCoin )
 
   -- add coin to table for tracking purposes
-  coinExtraTable[#coinExtraTable+1] = coin
+  if x ~= nil then
+    coinRainTable[#coinRainTable+1] = coin
+  else
+    coinBlazeTable[#coinBlazeTable+1] = coin
+  end
+  
 end
 
 function displayPowerText(text)
@@ -228,6 +237,25 @@ function displayPowerText(text)
   end
 
   transition.scaleTo( powerText, { xScale = 3, yScale = 3, alpha=0, time = 600, transition = easing.inOutExpo, onComplete=removePowerText } )
+end
+
+function powerups.clearDisplay()
+  print(coinRainGroup)
+  if coinBlazeGroup ~= nil then
+      -- clear coins
+      for i = 1, #coinBlazeTable do
+        print( "remove extra coins.." )
+        display.remove( coinBlazeTable[i] )
+      end
+      
+
+      -- clear table
+      coinBlazeTable = nil
+
+      coinBlazeGroup:removeSelf()
+      coinBlazeGroup = nil
+
+  end
 end
 
 -- return powerups

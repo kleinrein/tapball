@@ -151,9 +151,11 @@ function spawnGem()
 
   gem:play()
 
-  local function hitGem()
-    display.remove( gem )
-    timer.performWithDelay( 100, powerups.randGemPower() )
+  local function hitGem(event)
+    if event.other.name == 'ball' then
+      display.remove( gem )
+      timer.performWithDelay( 100, powerups.randGemPower() )
+    end
   end
 
   -- collision event
@@ -178,6 +180,8 @@ function scene:create( event )
   physics.start()
   physics.pause()
 
+  print('level1 create')
+
   -- create a grey rectangle as the backdrop
   -- the physical screen will likely be a different shape than our defined content area
   -- since we are going to position the background from it's top, left corner, draw the
@@ -197,29 +201,7 @@ function scene:create( event )
   -- add physics to the ball
   physics.addBody( ball, { bounce = 0.7, friction = 0.3, density = 1.0, radius = 40})
 
-  local function push( event )
-
-    local force
-    if event.x < ball.x then
-      force = 400
-    else
-      force = -400
-    end
-
-    if event.x == ball.x then
-      force = 0
-    end
-
-
-    transition.to( ball, { time = 10, xScale = 1.1, yScale = 1.1, transition=easing.outQuad } )
-    transition.from( ball, {time = 10, xScale = 0.9, yScale = 0.9, transition = easing.outQuad } )
-
-    ball:applyForce( force, -3250, ball.x, ball.y )
-    audio.play( jump )
-    updateScore(1)
-  end
-
-  ball:addEventListener("tap", push)
+  ball:addEventListener("tap", pushBall)
 
   -- create a grass object and add physics (with custom shape)
   grass = display.newImageRect( "graphics/grass.png", screenW, 60 )
@@ -234,7 +216,7 @@ function scene:create( event )
     -- end game if ball collide with grass
     if event.other.name == "grass" then
       audio.play( gameOverSound )
-      -- endgame()
+      endgame()
     end
   end
 
@@ -244,9 +226,9 @@ function scene:create( event )
   physics.addBody( grass, "static", { density = 1, friction=0.3, shape=grassShape } )
 
   -- create right and left collision boxes
-  collisionLeft = display.newRect( 0, display.contentCenterY, 0, display.actualContentHeight )
+  collisionLeft = display.newRect( 0, display.contentCenterY, 0, display.actualContentHeight + 1000 )
   collisionRight = display.newRect( display.actualContentWidth, display.contentCenterY, 0, display.actualContentHeight )
-  collisionTop = display.newRect( display.contentCenterX, -100, display.actualContentWidth, 1 )
+  collisionTop = display.newRect( display.contentCenterX, -50, display.actualContentWidth, 1 )
 
   physics.addBody( collisionRight, "static", { density = 1, friction = 0.3} )
   physics.addBody( collisionLeft, "static", { density = 1, friction = 0.3})
@@ -259,13 +241,16 @@ function scene:create( event )
   sceneGroup:insert( background )
   sceneGroup:insert( grass)
   sceneGroup:insert( ball )
-
+  sceneGroup:insert( collisionLeft )
+  sceneGroup:insert( collisionRight )
+  
   -- add top body after some time
   local function addTopBody()
     physics.addBody ( collisionTop, "static", { density = 1, bounce = 0 } )
+    sceneGroup:insert( collisionTop )
   end
 
-  timer.performWithDelay( 1500, addTopBody )
+  timer.performWithDelay( 750, addTopBody )
 
   -- enemy test
   -- spawnEnemy()
@@ -289,6 +274,8 @@ function scene:show( event )
     physics.start()
     physics.setGravity(0, gravity)
     physics.setPositionIterations( 16 )
+    physics.setContinuous( true )
+    physics.setDrawMode( 'hybrid' )
 
     -- score label
     scoreTxt = display.newText {
@@ -308,6 +295,31 @@ function scene:show( event )
     sceneGroup:insert( scoreTxt )
   end
 end
+
+
+function pushBall( event )
+    local force
+    if event ~= nil then  
+      if event.x < ball.x then
+        force = 400
+      else
+        force = -400
+      end
+
+      if event.x == ball.x then
+        force = 0
+      end
+    else
+      force = math.random(-400, 400)
+    end
+
+    transition.to( ball, { time = 10, xScale = 1.1, yScale = 1.1, transition=easing.outQuad } )
+    transition.from( ball, {time = 10, xScale = 0.9, yScale = 0.9, transition = easing.outQuad } )
+
+    ball:applyForce( force, -3250, ball.x, ball.y )
+    audio.play( jump )
+    updateScore(1)
+  end
 
 function scene:hide( event )
   local sceneGroup = self.view
@@ -333,18 +345,26 @@ function scene:destroy( event )
   -- e.g. remove display objects, remove touch listeners, save state, etc.
   local sceneGroup = self.view
 
-  package.loaded[physics] = nil
-  physics = nil
   score = nil
   lost = nil
 
   -- elements
   grass = nil
+
+  -- remove ball and top collision
+  physics.removeBody(ball)
+  physics.removeBody(collisionTop)
+  display:remove(ball)
   ball = nil
+
   spikeball = nil
   background = nil
   grassShape = nil
   scoreTxt:removeSelf()
+
+  -- physics clear
+  package.loaded[physics] = nil
+  physics = nil
 
   -- dispose audio
   audio.dispose( jump )
@@ -381,6 +401,9 @@ function endgame()
 end
 
 function lostDialog()
+  -- clear powerups display
+  powerups.clearDisplay() 
+
   print( "lostdialog " .. tostring(lost) )
   local dialogGroup = display.newGroup()
 
@@ -417,19 +440,13 @@ function lostDialog()
 
   -- buttons
   local restart = widget.newButton {
-    label="Restart",
-    font = "8bit",
-    labelColor= { default={ 255,255,255}, over={ 255, 255, 255, 0.5 } },
-    emboss=true,
+    defaultFile = "graphics/restart-btn.png",
     width=120, height=30,
     onRelease = restartGame
   }
 
   local quit = widget.newButton {
-    label="Quit",
-    font="8bit",
-    labelColor= { default={ 255,255,255}, over={ 255, 255, 255, 0.5 } },
-    emboss=true,
+    defaultFile = "graphics/quit-btn.png",
     width=120, height=30,
     onRelease = quitGame,
     x = display.contentCenterX
@@ -439,7 +456,7 @@ function lostDialog()
   quit.x = display.contentCenterX
 
   restart.y = display.contentHeight - 180
-  quit.y = display.contentHeight - 140
+  quit.y = display.contentHeight - 130
 
   -- animate restart button
   transition.to( restart, { xScale=1.05, yScale=1.05, time=500, iterations=-1 } )
@@ -470,11 +487,20 @@ end
 
 ---------------------------------------------------------------------------------
 
+function onKeyEvent(event)
+  print(event.keyName)
+  if ( event.keyName == "up" ) then
+    pushBall()
+  end
+end
+
 -- Listener setup
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
+
+Runtime:addEventListener( "key", onKeyEvent )
 
 -----------------------------------------------------------------------------------------
 

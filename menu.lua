@@ -81,8 +81,10 @@ function scene:create( event )
 
    local function onCollision(self, event)
    		local function goUp()
-		   transition.to( playBtn, { time=150, y=playBtn.y - 5} )
+		   if playBtn ~= nil then
+				transition.to( playBtn, { time=150, y=playBtn.y - 5} )
 		   end
+		end
       transition.to( playBtn, { time=150, y=playBtn.y + 5, onComplete=goUp, transition=easing.outExpo } )
   end
 
@@ -102,7 +104,6 @@ end
 function scene:show( event )
 	local sceneGroup = self.view
 	local phase = event.phase
-
 	physics.start()
 
 	composer.removeHidden()
