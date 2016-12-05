@@ -464,7 +464,28 @@ function lostDialog()
   -- transition.to( restart, { xScale=1.2, yScale=1.2, time=1000, onComplete=fromAnimRestart} )
 
   -- score label
-  local highScore = display.newText( "High: " .. 40, 100, 200, "8bit", 16 )
+  -- show highscore
+
+  local highscore = system.getPreference( "app", "highscore", "number" )
+  local appPreferences = {
+    highscore = score
+  }
+  if highscore ~= nil then
+    if score > highscore then
+      system.setPreferences( "app", appPreferences )
+      highscore = score
+    end
+  else
+    print('highscore is nil')
+    system.setPreferences( "app", appPreferences )
+    highscore = score
+  end
+
+  print(highscore)
+  
+  local highScore = display.newText( "High: " .. highscore, 100, 200, "8bit", 16 )
+
+  -- show your score
   local yourScore = display.newText( "Score: " .. score, 100, 200, "8bit", 14 )
 
   yourScore.x = display.contentCenterX
