@@ -10,6 +10,7 @@ local powerups = {}
 -- tables
 local coinRainTable = {}
 local coinBlazeTable = {}
+local timers = {}
 
 -- groups
 local coinBlazeGroup = nil
@@ -57,7 +58,7 @@ function spawnEnemy()
 
   local function spiked(event)
     if event.other.name == "ball" then
-      endgame()
+      explodeBall()
       display.remove( spikeball )
     end
 
@@ -72,7 +73,7 @@ function spawnEnemy()
   end
 
   local function showSpikeball()
-      spikeball = display.newImageRect( "spikeball.png", 20, 20 )
+      spikeball = display.newImageRect( "graphics/spike-ball.png", 25, 25 )
 
       spikeball.x, spikeball.y = spikeballX, -10
       spikeball.name = "spikeball"
@@ -146,8 +147,10 @@ function coinBlaze()
       coinBlazeTable = {}
 
       -- clear coinBlazeGroup
-      coinBlazeGroup:removeSelf()
-      coinBlazeGroup = nil
+      if (coinBlazeGroup ~= nil) then
+        coinBlazeGroup:removeSelf()
+        coinBlazeGroup = nil
+      end
 
       text = nil
 
@@ -229,8 +232,14 @@ function spawnExtraCoin(x)
 end
 
 function displayPowerText(text)
+local paint = {
+    type = "gradient",
+    color1 = { 0, 0, 1, 1 },
+    color2 = { 0, 1, 0, 1 },
+    direction = "down"
+}
   local powerText = display.newText( text , display.contentCenterX, 200, native.systemFont, 22 )
-  powerText:setFillColor( black )
+  powerText:setFillColor( paint )
 
   local function removePowerText()
     display.remove( powerText )
@@ -248,6 +257,10 @@ function powerups.clearDisplay()
         display.remove( coinBlazeTable[i] )
       end
       
+      -- clea timers
+      for id, value in pairs(timer._runlist) do
+        timer.cancel(value)
+      end
 
       -- clear table
       coinBlazeTable = nil

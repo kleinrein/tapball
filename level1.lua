@@ -42,7 +42,6 @@ local coinSound = audio.loadSound( "audio/coin.mp3" )
 local gameOverSound = audio.loadSound( "audio/gameover.mp3" )
 
 -- constants
-local gravity = 30
 local forceHit = -10
 
 --------------------------------------------
@@ -193,13 +192,14 @@ function scene:create( event )
   background.y = 0 + display.screenOriginY
 
   -- make a ball (off-screen), position it, and rotate slightly
-  ball = display.newImageRect( "ball.png", 80, 80 )
+  ball = display.newImageRect( "graphics/ball.png", 80, 80 )
   ball.x, ball.y = 160, -100
   ball.name = "ball"
-  ball.linearDamping = 10000
+  ball.linearDamping = 10
+  ball.angularDamping = 10
 
   -- add physics to the ball
-  physics.addBody( ball, { bounce = 0.7, friction = 0.3, density = 1.0, radius = 40})
+  physics.addBody( ball, { bounce = 0.75, friction = 0.3, density = 1.0, radius = 40})
 
   ball:addEventListener("tap", pushBall)
 
@@ -230,8 +230,8 @@ function scene:create( event )
   collisionRight = display.newRect( display.actualContentWidth, display.contentCenterY, 0, display.actualContentHeight )
   collisionTop = display.newRect( display.contentCenterX, -50, display.actualContentWidth, 1 )
 
-  physics.addBody( collisionRight, "static", { density = 1, friction = 0.3} )
-  physics.addBody( collisionLeft, "static", { density = 1, friction = 0.3})
+  physics.addBody( collisionRight, "static", { density = 0, friction = 0, bounce = 0 } )
+  physics.addBody( collisionLeft, "static", { density = 0, friction = 0, bounce = 0 })
 
   -- eventlistener when ball collide with grass
   ball.collision = onCollision
@@ -246,7 +246,7 @@ function scene:create( event )
   
   -- add top body after some time
   local function addTopBody()
-    physics.addBody ( collisionTop, "static", { density = 1, bounce = 0 } )
+    physics.addBody ( collisionTop, "static", { density = 0, bounce = 0, friction = 0 } )
     sceneGroup:insert( collisionTop )
   end
 
@@ -272,17 +272,17 @@ function scene:show( event )
     -- INSERT code here to make the scene come alive
     -- e.g. start timers, begin animation, play audio, etc.
     physics.start()
-    physics.setGravity(0, gravity)
-    physics.setPositionIterations( 16 )
-    physics.setContinuous( true )
-    physics.setDrawMode( 'hybrid' )
+    physics.setGravity(0, 12)
+    physics.setVelocityIterations( 60 )
+    physics.setPositionIterations( 60 )
+    
 
     -- score label
     scoreTxt = display.newText {
       text = "Score 0",
       x = 60,
       y = 0,
-      font = "8bit",
+      font = "pixelsplitter.ttf",
       fontSize = 12,
       align = "left"
     }
@@ -299,24 +299,25 @@ end
 
 function pushBall( event )
     local force
-    if event ~= nil then  
+    local xMin, xMax = event.x - 10, event.x + 10
+
+    print(xMin .. "|" .. xMax .. "|" .. event.x .. "|" .. ball.x)
+   
       if event.x < ball.x then
-        force = 400
+        force = 85
       else
-        force = -400
+        force = -85
       end
 
-      if event.x == ball.x then
+      if (xMin <= ball.x and xMax >= ball.x) then
+      print("middle")
         force = 0
       end
-    else
-      force = math.random(-400, 400)
-    end
 
     transition.to( ball, { time = 10, xScale = 1.1, yScale = 1.1, transition=easing.outQuad } )
     transition.from( ball, {time = 10, xScale = 0.9, yScale = 0.9, transition = easing.outQuad } )
 
-    ball:applyForce( force, -3250, ball.x, ball.y )
+    ball:applyForce( force, -450, ball.x, ball.y )
     audio.play( jump )
     updateScore(1)
   end
@@ -387,6 +388,12 @@ function scene:destroy( event )
   if coin ~= nil then display.remove(coin) end
 end
 
+function explodeBall()
+  transition.to( ball, { time=300, xScale= 1.5, yScale=1.5, alpha=0 } )
+
+  endgame()
+end
+
 function endgame()
   print( "endgame " .. tostring(lost) )
 
@@ -415,10 +422,16 @@ function lostDialog()
   -- dialog
   local dialog = display.newRect( 0, 0, display.contentWidth, display.contentHeight + 100 )
   dialog:setFillColor( 0, 0, 0, .5 )
+  dialogGroup:insert( dialog )
 
   dialog.fill.effect = "filter.blur"
   dialog.x, dialog.y = display.contentCenterX, display.contentCenterY
   dialog.alpha = 0
+
+  -- show lost dialog
+  local lostDialog = display.newImageRect( "graphics/lost-dialog-frame.png", display.contentWidth - 50, display.contentHeight / 1.5 )
+  lostDialog.x, lostDialog.y = display.contentCenterX, display.contentCenterY
+  dialogGroup:insert( lostDialog )
 
   transition.to( dialog, { alpha=1, time=200, transition=easing.outExpo} )
 
@@ -441,13 +454,13 @@ function lostDialog()
   -- buttons
   local restart = widget.newButton {
     defaultFile = "graphics/restart-btn.png",
-    width=120, height=30,
+    width=125, height=40,
     onRelease = restartGame
   }
 
   local quit = widget.newButton {
     defaultFile = "graphics/quit-btn.png",
-    width=120, height=30,
+    width=120, height=35,
     onRelease = quitGame,
     x = display.contentCenterX
   }
@@ -459,47 +472,50 @@ function lostDialog()
   quit.y = display.contentHeight - 130
 
   -- animate restart button
-  transition.to( restart, { xScale=1.05, yScale=1.05, time=500, iterations=-1 } )
+ transition.to( restart, { y= restart.y - 2, xScale=1.1, yScale=1.1, time=1000, iterations=-1 } )
+
 
   -- transition.to( restart, { xScale=1.2, yScale=1.2, time=1000, onComplete=fromAnimRestart} )
 
   -- score label
   -- show highscore
-
   local highscore = system.getPreference( "app", "highscore", "number" )
   local appPreferences = {
     highscore = score
   }
+
+  local function newHighScore()
+    local newHighScore = display.newImageRect( "graphics/lost-dialog-new-highscore.png", 200, 20 )
+    newHighScore.x, newHighScore.y = display.contentCenterX, display.contentCenterY - 125
+
+    dialogGroup:insert( newHighScore )
+  end
+
   if highscore ~= nil then
     if score > highscore then
       system.setPreferences( "app", appPreferences )
       highscore = score
+      newHighScore()
     end
   else
-    print('highscore is nil')
     system.setPreferences( "app", appPreferences )
     highscore = score
+    newHighScore()
   end
-
-  print(highscore)
   
-  local highScore = display.newText( "High: " .. highscore, 100, 200, "8bit", 16 )
+  local highScore = display.newText( "High: " .. highscore, 100, 200, "pixelsplitter.ttf", 16 )
 
   -- show your score
-  local yourScore = display.newText( "Score: " .. score, 100, 200, "8bit", 14 )
+  local yourScore = display.newText( "Score: " .. score, 100, 200, "pixelsplitter.ttf", 14 )
 
-  yourScore.x = display.contentCenterX
-  highScore.x = display.contentCenterX
-
-  yourScore.y = display.contentCenterY - 100
-  highScore.y = display.contentCenterY - 10
+  yourScore.x, yourScore.y = display.contentCenterX, display.contentCenterY - 75
+  highScore.x, highScore.y = display.contentCenterX, display.contentCenterY - 10
 
   -- yourscore animation
   yourScore.alpha = 0
   transition.to( yourScore, { xScale=1.75, yScale=1.75, alpha=1.0, rotation=math.random(-5, 5), time=500} )
 
   -- insert objects into scenegroup
-  dialogGroup:insert( dialog )
   dialogGroup:insert( restart )
   dialogGroup:insert( quit )
   dialogGroup:insert( highScore )
@@ -508,20 +524,11 @@ end
 
 ---------------------------------------------------------------------------------
 
-function onKeyEvent(event)
-  print(event.keyName)
-  if ( event.keyName == "up" ) then
-    pushBall()
-  end
-end
-
 -- Listener setup
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
-
-Runtime:addEventListener( "key", onKeyEvent )
 
 -----------------------------------------------------------------------------------------
 

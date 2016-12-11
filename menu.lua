@@ -29,8 +29,9 @@ function scene:create( event )
 	local sceneGroup = self.view
 
 	physics.start()
-  	physics. pause()
-	physics.setGravity(0, 20)
+  	physics.pause()
+	physics.setScale( 60 )
+    physics.setPositionIterations( 6 )
 	  -- physics.setDrawMode( "hybrid" )
 
 	-- Called when the scene's view does not exist.
@@ -46,7 +47,7 @@ function scene:create( event )
 	background.y = 0 + display.screenOriginY
 
 	-- create a logo
-   local titleLogo = display.newImageRect( "logo.png", 180, 25 )
+   local titleLogo = display.newImageRect( "graphics/logo.png", 180, 25 )
    titleLogo.x = display.contentCenterX
    titleLogo.y = 120
 
@@ -57,7 +58,7 @@ function scene:create( event )
 		labelColor = { default={255}, over={128} },
 		defaultFile="graphics/play-btn.png",
 		overFile="graphics/play-btn-hover.png",
-		width=120, height=30,
+		width=140, height=40,
 		onRelease = onPlayBtnRelease	-- event listener function
 	}
 	playBtn.x = display.contentCenterX
@@ -71,7 +72,7 @@ function scene:create( event )
 
 
 	-- load the ball
-   local ball = display.newImageRect( "ball.png", 60, 60 )
+   local ball = display.newImageRect( "graphics/ball.png", 60, 60 )
    ball.x = display.contentCenterX + math.random(-20, 20)
    ball.y = 60
 
