@@ -10,6 +10,7 @@ local powerups = {}
 -- tables
 local coinRainTable = {}
 local coinBlazeTable = {}
+local spikeBallTable = {}
 local timers = {}
 
 -- groups
@@ -26,6 +27,7 @@ function powerups.randGemPower()
     local gemPower = gemPowers[randGemPower]
     chooseGemPowers( gemPower )
 end
+
 
 --[[
     chooseGemPowers
@@ -74,13 +76,14 @@ function spawnEnemy()
 
   local function showSpikeball()
       spikeball = display.newImageRect( "graphics/spike-ball.png", 25, 25 )
-
       spikeball.x, spikeball.y = spikeballX, -10
       spikeball.name = "spikeball"
 
       physics.addBody( spikeball, { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
-
       spikeball:addEventListener("collision", spiked)
+
+      -- add to group
+      spikeBallTable[#spikeBallTable+1] = spikeball
   end
 
   -- warn enemy transition
@@ -91,9 +94,8 @@ end
     coinRain
 --]]
 function coinRain()
-  -- coin catch group
+  -- coin rain group
   local coinRainGroup = display.newGroup()
-
   displayPowerText( "CONRAIN" )
 
   -- warn player
@@ -116,9 +118,8 @@ end
     coinBlaze
 --]]
 function coinBlaze()
-  -- coin rain group
+  -- coin blaze group
   coinBlazeGroup = display.newGroup()
-
   displayPowerText( "COINBLAZE" )
   
   local timerVal = 5
@@ -134,12 +135,9 @@ function coinBlaze()
     timerVal = timerVal - 1
     timerValText.text = timerVal
 
-    print( timerVal )
-
     if timerVal == 0 then
       -- clear coins
       for i = 1, #coinBlazeTable do
-        print( "remove extra coins.." )
         display.remove( coinBlazeTable[i] )
       end
 
@@ -249,26 +247,36 @@ local paint = {
 end
 
 function powerups.clearDisplay()
-  print(coinRainGroup)
-  if coinBlazeGroup ~= nil then
-      -- clear coins
-      for i = 1, #coinBlazeTable do
-        print( "remove extra coins.." )
-        display.remove( coinBlazeTable[i] )
-      end
-      
-      -- clea timers
-      for id, value in pairs(timer._runlist) do
-        timer.cancel(value)
-      end
-
-      -- clear table
-      coinBlazeTable = nil
-
-      coinBlazeGroup:removeSelf()
-      coinBlazeGroup = nil
-
+  -- clear timers
+  for id, value in pairs(timer._runlist) do
+    timer.cancel(value)
   end
+      
+  -- clear coinblaze
+  if coinBlazeGroup ~= nil then
+    for i = 1, #coinBlazeTable do
+      display.remove( coinBlazeTable[i] )
+    end
+    
+     -- clear group
+    coinBlazeGroup:removeSelf()
+    coinBlazeGroup = nil
+  end
+
+  -- clear coinrain
+  if coinRainTable ~= nil then
+    for i = 1, #coinRainTable do
+      display.remove( coinRainTable[i] )
+    end
+  end
+        
+  -- clear spikeballs
+  if spikeBallTable ~= nil then
+    for i = 1, #spikeBallTable do
+      display.remove ( spikeBallTable[i] )
+    end
+  end
+   
 end
 
 -- return powerups

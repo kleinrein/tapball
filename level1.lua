@@ -41,9 +41,6 @@ local jump = audio.loadSound( "audio/jump.mp3" )
 local coinSound = audio.loadSound( "audio/coin.mp3" )
 local gameOverSound = audio.loadSound( "audio/gameover.mp3" )
 
--- constants
-local forceHit = -10
-
 --------------------------------------------
 
 -- forward declarations and other locals
@@ -178,6 +175,7 @@ function scene:create( event )
   -- running until the scene is on the screen.
   physics.start()
   physics.pause()
+  physics.setGravity( 0, 12 )
 
   print('level1 create')
 
@@ -197,7 +195,7 @@ function scene:create( event )
   ball.name = "ball"
   ball.linearDamping = 10
   ball.angularDamping = 10
-
+  
   -- add physics to the ball
   physics.addBody( ball, { bounce = 0.75, friction = 0.3, density = 1.0, radius = 40})
 
@@ -253,7 +251,6 @@ function scene:create( event )
   timer.performWithDelay( 750, addTopBody )
 
   -- enemy test
-  -- spawnEnemy()
 end
 
 function scene:show( event )
@@ -271,10 +268,7 @@ function scene:show( event )
     --
     -- INSERT code here to make the scene come alive
     -- e.g. start timers, begin animation, play audio, etc.
-    physics.start()
-    physics.setGravity(0, 12)
-    physics.setVelocityIterations( 60 )
-    physics.setPositionIterations( 60 )
+    physics.start(true)
     
 
     -- score label
@@ -302,22 +296,21 @@ function pushBall( event )
     local xMin, xMax = event.x - 10, event.x + 10
 
     print(xMin .. "|" .. xMax .. "|" .. event.x .. "|" .. ball.x)
-   
-      if event.x < ball.x then
-        force = 85
-      else
-        force = -85
-      end
+    force = (event.x < ball.x) and 3 or -3
 
-      if (xMin <= ball.x and xMax >= ball.x) then
-      print("middle")
-        force = 0
-      end
+    if (xMin <= ball.x and xMax >= ball.x) then
+      force = 0
+    end
 
     transition.to( ball, { time = 10, xScale = 1.1, yScale = 1.1, transition=easing.outQuad } )
     transition.from( ball, {time = 10, xScale = 0.9, yScale = 0.9, transition = easing.outQuad } )
 
-    ball:applyForce( force, -450, ball.x, ball.y )
+    -- apply gravity linear impulse
+    ball:applyLinearImpulse( force, -15, ball.x, ball.y )
+
+    -- apply gravity angular impulse
+    ball:applyAngularImpulse( force )
+
     audio.play( jump )
     updateScore(1)
   end
