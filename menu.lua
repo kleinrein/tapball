@@ -11,9 +11,6 @@ local physics = require( "physics" )
 -- include Corona's "widget" library
 local widget = require "widget"
 
--- include preferences
-local prefSound = system.getPreference( "app", "prefSound", "boolean" )
-
 --------------------------------------------
 
 -- forward declarations and other locals

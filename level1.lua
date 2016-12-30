@@ -12,6 +12,7 @@ local scene = composer.newScene()
 
 -- other files
 local powerups = require( "scripts.powerups" )
+local audiohandler = require ( "scripts.audiohandler" )
 
 -- variables
 local scoreTxt
@@ -35,11 +36,6 @@ local collisionTop
 
 -- timers
 local coinTimer
-
--- sounds
-local jump = audio.loadSound( "audio/jump.mp3" )
-local coinSound = audio.loadSound( "audio/coin.mp3" )
-local gameOverSound = audio.loadSound( "audio/gameover.mp3" )
 
 --------------------------------------------
 
@@ -82,7 +78,7 @@ function spawnCoin()
     if event.other.name == 'ball' then
 
       -- play coin sound
-      audio.play(coinSound)
+      audiohandler.coin()
 
       updateScore(5)
       transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
@@ -213,7 +209,7 @@ function scene:create( event )
   local function onCollision(self, event)
     -- end game if ball collide with grass
     if event.other.name == "grass" then
-      audio.play( gameOverSound )
+      audiohandler.gameover()
       endgame()
     end
   end
@@ -310,8 +306,8 @@ function pushBall( event )
 
     -- apply gravity angular impulse
     ball:applyAngularImpulse( force )
-
-    audio.play( jump )
+    
+    audiohandler.jump()
     updateScore(1)
   end
 
@@ -361,8 +357,7 @@ function scene:destroy( event )
   physics = nil
 
   -- dispose audio
-  audio.dispose( jump )
-  audio.dispose( coinSound )
+  audiohandler.dispose()
 
   -- remove coins
   for i = 1, #coinTable do
