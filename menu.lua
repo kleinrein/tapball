@@ -11,6 +11,9 @@ local physics = require( "physics" )
 -- include Corona's "widget" library
 local widget = require "widget"
 
+-- include preferences
+local prefSound = system.getPreference( "app", "prefSound", "boolean" )
+
 --------------------------------------------
 
 -- forward declarations and other locals
@@ -29,6 +32,7 @@ local function onPlayBtnRelease()
 end
 
 local function shrinkBtnAnimation( event, element )
+  -- shrink button on touch
   if ( event.phase == "began" ) then
     transition.to( element, { xScale = .9, yScale = .9, time = 250, transition = easing.outQuart } )
   elseif ( event.phase == "ended" ) then
@@ -37,7 +41,6 @@ local function shrinkBtnAnimation( event, element )
 end
 
 local function onPlayBtnTouch( event )
-  -- animate button on touch
   shrinkBtnAnimation( event, playBtn )
 end
 
@@ -54,6 +57,12 @@ local function onSoundOnBtnTap( event )
     soundBtn.sound = true
     soundBtn.fill = imgSoundOn
   end
+
+  local appPreferences = {
+    prefSound = soundBtn.sound
+  }
+
+  system.setPreferences( "app", appPreferences )
   
   return true
 end
@@ -64,7 +73,6 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
-  -- physics.setDrawMode( "hybrid" )
 
   -- Called when the scene's view does not exist.
   --
@@ -143,6 +151,7 @@ function scene:create( event )
   sceneGroup:insert( playBtn )
   sceneGroup:insert( ball )
   sceneGroup:insert( playBtnBody )
+  sceneGroup:insert( soundBtn )
 end
 
 function scene:show( event )
