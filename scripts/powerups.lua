@@ -18,15 +18,20 @@ local timers = {}
 local coinBlazeGroup = nil
 
 -- gem powers
-local gemPowers = { "SpikedEnemy", "coinBlaze", "coinRain" }
+local gemPowers = { "SpikedEnemy", "CoinBlaze", "CoinRain" }
 
 -- sounds
 local coinSound = audio.loadSound( "audio/coin.mp3" )
 
+-- flags
+local isOver = false
+local isCoinBlazeActive = false
+
 function powerups.randGemPower()
-    local randGemPower = math.random( #gemPowers )
-    local gemPower = gemPowers[randGemPower]
-    chooseGemPowers( gemPower )
+  isOver = false
+  local randGemPower = math.random( #gemPowers )
+  local gemPower = gemPowers[randGemPower]
+  chooseGemPowers( gemPower )
 end
 
 
@@ -34,12 +39,19 @@ end
     chooseGemPowers
 --]]
 function chooseGemPowers( gemPower )
+
+  if isCoinBlazeActive == true then
+      -- only spawn enemies if coinblaze is active
+      spawnEnemy()
+      return
+  end
   
   if gemPower == "SpikedEnemy" then
     spawnEnemy()
-  elseif gemPower == "coinBlaze" then
+  elseif gemPower == "CoinBlaze" then
+    isCoinBlazeActive = true
     coinBlaze()
-  elseif gemPower == "coinRain" then
+  elseif gemPower == "CoinRain" then
     coinRain()  
   end
 
@@ -76,6 +88,7 @@ function spawnEnemy()
   end
 
   local function showSpikeball()
+    if isOver ~= true then
       spikeball = display.newImageRect( "graphics/spike-ball.png", 25, 25 )
       spikeball.x, spikeball.y = spikeballX, -10
       spikeball.name = "spikeball"
@@ -85,6 +98,7 @@ function spawnEnemy()
 
       -- add to group
       spikeBallTable[#spikeBallTable+1] = spikeball
+    end
   end
 
   -- warn enemy transition
@@ -106,8 +120,10 @@ function coinRain()
   coinRainAlert.fill = { 0, 1, 0.5 }
 
   local function showCoinRain()
-    for i=1,15 do
-      timer.performWithDelay( 1, spawnExtraCoin(coinX) )
+    if isOver == false then
+      for i=1,15 do
+        timers[#timers+1] = timer.performWithDelay( 1, spawnExtraCoin(coinX) )
+      end
     end
   end
 
@@ -128,7 +144,7 @@ function coinBlaze()
 
   local function coinBlazeBlaze()
     for i=1,15 do
-      timer.performWithDelay( 1, spawnExtraCoin() )
+      timers[#timers+1] = timer.performWithDelay( 1, spawnExtraCoin() )
     end
   end
 
@@ -155,10 +171,12 @@ function coinBlaze()
 
       display.remove( timerValText )
       timerValText = nil
+
+      isCoinBlazeActive = false
     end
   end
-  timer.performWithDelay( 1000, coinBlazeTimer, 5 )
-  timer.performWithDelay( 450, coinBlazeBlaze )
+  timers[#timers+1] = timer.performWithDelay( 1000, coinBlazeTimer, 5 )
+  timers[#timers+1] = timer.performWithDelay( 450, coinBlazeBlaze )
 
   -- add to group
   coinBlazeGroup:insert( timerValText )
@@ -219,7 +237,7 @@ function spawnExtraCoin(x)
     coin:addEventListener( "collision", hitCoin )
   end
 
-  timer.performWithDelay( 1, addBodyToCoin )
+  timers[#timers+1] = timer.performWithDelay( 1, addBodyToCoin )
 
   -- add coin to table for tracking purposes
   if x ~= nil then
@@ -248,10 +266,14 @@ local paint = {
 end
 
 function powerups.clearDisplay()
+  -- game over flag
+  isOver = true
+
   -- clear timers
-  for id, value in pairs(timer._runlist) do
-    timer.cancel(value)
+  for i = 1, #timers do
+    timer.cancel( timers[i] )
   end
+  timers = {}
       
   -- clear coinblaze
   if coinBlazeGroup ~= nil then
@@ -265,18 +287,16 @@ function powerups.clearDisplay()
   end
 
   -- clear coinrain
-  if coinRainTable ~= nil then
-    for i = 1, #coinRainTable do
-      display.remove( coinRainTable[i] )
-    end
+  for i = 1, #coinRainTable do
+    display.remove( coinRainTable[i] )
   end
+  coinRainTable = {}
         
   -- clear spikeballs
-  if spikeBallTable ~= nil then
-    for i = 1, #spikeBallTable do
-      display.remove ( spikeBallTable[i] )
-    end
+  for i = 1, #spikeBallTable do
+    display.remove ( spikeBallTable[i] )
   end
+  spikeBallTable = {}
    
 end
 

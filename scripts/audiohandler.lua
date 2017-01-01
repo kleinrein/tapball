@@ -10,34 +10,36 @@ local audiohandler = {}
 local prefSound = system.getPreference( "app", "prefSound", "boolean" )
 
 -- sounds
-local jumpSound = audio.loadSound( "audio/jump.mp3" )
-local coinSound = audio.loadSound( "audio/coin.mp3" )
-local gameOverSound = audio.loadSound( "audio/gameover.mp3" )
+local jumpSound = audio.loadSound( "./audio/jump.mp3" )
+local coinSound = audio.loadSound( "./audio/coin.mp3" )
+local gameOverSound = audio.loadSound( "./audio/gameover.mp3" )
+
+function audiohandler.update()
+  prefSound = system.getPreference( "app", "prefSound", "boolean" )
+end
 
 function audiohandler.jump()
-  if prefSound then
-    audio.play( jump )
+  print('prefSound ' .. tostring(prefSound))
+  if prefSound == true then
+    audio.play( jumpSound )
   end
 end
 
 function audiohandler.coin()
-  if prefSound then
+  if prefSound == true then
     audio.play( coinSound )
   end
 end
 
 function audiohandler.gameover()
-  if prefSound then
+  if prefSound == true then
     audio.play( gameOverSound )
   end
 end
 
 function audiohandler.dispose()
   -- dispose audio
-  audio.dispose( jumpSound )
-  audio.dispose( coinSound )
-  audio.dispose( gameOverSound )
 end
 
--- return audio
+-- return audiohandler
 return audiohandler

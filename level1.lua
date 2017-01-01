@@ -11,8 +11,9 @@ local physics = require( "physics" )
 local scene = composer.newScene()
 
 -- other files
-local powerups = require( "scripts.powerups" )
-local audiohandler = require ( "scripts.audiohandler" )
+local powerups
+local audiohandler = require( "scripts.audiohandler" )
+local btnanimations = require( "scripts.btnanimations" )
 
 -- variables
 local scoreTxt
@@ -257,6 +258,14 @@ function scene:show( event )
 
   lost = false
 
+  -- update audio pref
+  audiohandler.update()
+  
+  powerups = nil
+
+  -- init powerups
+  powerups = require( "scripts.powerups" )
+
   if phase == "will" then
     -- Called when the scene is still off screen and is about to move on screen
   elseif phase == "did" then
@@ -442,7 +451,7 @@ function lostDialog()
   -- buttons
   local restart = widget.newButton {
     defaultFile = "graphics/restart-btn.png",
-    width=125, height=40,
+    width=120, height=35,
     onRelease = restartGame
   }
 
@@ -459,11 +468,20 @@ function lostDialog()
   restart.y = display.contentHeight - 180
   quit.y = display.contentHeight - 130
 
+  local function onRestartBtnTouch( event )
+    btnanimations.shrinkBtnAnimation( event, restart )
+  end
+
+  local function onQuitBtnTouch( event )
+    btnanimations.shrinkBtnAnimation( event, quit )
+  end
+
+  -- btn touch transitions
+  restart:addEventListener( "touch", onRestartBtnTouch )
+  quit:addEventListener( "touch", onQuitBtnTouch )
+
   -- animate restart button
- transition.to( restart, { y= restart.y - 2, xScale=1.1, yScale=1.1, time=1000, iterations=-1 } )
-
-
-  -- transition.to( restart, { xScale=1.2, yScale=1.2, time=1000, onComplete=fromAnimRestart} )
+ -- transition.to( restart, { y= restart.y - 2, xScale=1.1, yScale=1.1, time=1000, iterations=-1 } )
 
   -- score label
   -- show highscore

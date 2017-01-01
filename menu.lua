@@ -11,6 +11,9 @@ local physics = require( "physics" )
 -- include Corona's "widget" library
 local widget = require "widget"
 
+-- local scripts
+local btnanimations = require( "scripts.btnanimations" )
+
 --------------------------------------------
 
 -- forward declarations and other locals
@@ -28,21 +31,12 @@ local function onPlayBtnRelease()
   return true -- indicates successful touch
 end
 
-local function shrinkBtnAnimation( event, element )
-  -- shrink button on touch
-  if ( event.phase == "began" ) then
-    transition.to( element, { xScale = .9, yScale = .9, time = 250, transition = easing.outQuart } )
-  elseif ( event.phase == "ended" ) then
-    transition.to( element, { xScale = 1, yScale = 1, time = 250, transition = easing.outQuart } )
-  end
-end
-
 local function onPlayBtnTouch( event )
-  shrinkBtnAnimation( event, playBtn )
+  btnanimations.shrinkBtnAnimation( event, playBtn )
 end
 
 local function onSoundBtnTouch( event )
-  shrinkBtnAnimation( event, soundBtn )
+  btnanimations.shrinkBtnAnimation( event, soundBtn )
 end
 
 local function onSoundOnBtnTap( event )
@@ -70,6 +64,7 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
+  physics.setDrawMode("hybrid")
 
   -- Called when the scene's view does not exist.
   --
@@ -108,7 +103,7 @@ function scene:create( event )
   imgSoundOff = { type="image", filename="graphics/btn-sound-off.png" }
 
   soundBtn = display.newRect( display.contentWidth - 30, 20, 30, 30 )
-  soundBtn.fill = imgSoundOn
+  soundBtn.fill = system.getPreference( "app", "prefSound", "boolean" ) and imgSoundOn or imgSoundOff
   soundBtn.sound = true 
 
   soundBtn:addEventListener( "tap", onSoundOnBtnTap )
