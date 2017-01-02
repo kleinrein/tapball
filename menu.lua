@@ -64,7 +64,7 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
-  physics.setDrawMode("hybrid")
+  -- physics.setDrawMode("hybrid")
 
   -- Called when the scene's view does not exist.
   --
@@ -108,6 +108,18 @@ function scene:create( event )
 
   soundBtn:addEventListener( "tap", onSoundOnBtnTap )
   soundBtn:addEventListener( "touch", onSoundBtnTouch )
+
+  -- show highscore
+  local highscore = system.getPreference( "app", "highscore", "number" )
+
+  local highScoreText = display.newText {
+      text = "Highscore: " .. tostring(highscore),
+      x = display.contentCenterX,
+      y = 20,
+      font = "pixelsplitter.ttf",
+      fontSize = 10,
+      align = "left"
+    }
 
   -- create a physics body
   local playBtnBody = display.newRect(display.contentCenterX, display.contentHeight - 125, 125, 60)
