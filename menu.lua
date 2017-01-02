@@ -156,6 +156,7 @@ function scene:create( event )
   sceneGroup:insert( ball )
   sceneGroup:insert( playBtnBody )
   sceneGroup:insert( soundBtn )
+  sceneGroup:insert( highScoreText )
 end
 
 function scene:show( event )
