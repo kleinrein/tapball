@@ -238,6 +238,7 @@ function scene:create( event )
   sceneGroup:insert( ball )
   sceneGroup:insert( collisionLeft )
   sceneGroup:insert( collisionRight )
+  sceneGroup:insert( collisionTop )
   
   -- add top body after some time
   local function addTopBody()
@@ -274,7 +275,6 @@ function scene:show( event )
     -- INSERT code here to make the scene come alive
     -- e.g. start timers, begin animation, play audio, etc.
     physics.start(true)
-    
 
     -- score label
     scoreTxt = display.newText {
@@ -362,6 +362,7 @@ function scene:destroy( event )
   scoreTxt:removeSelf()
 
   -- physics clear
+  physics.stop()
   package.loaded[physics] = nil
   physics = nil
 

@@ -64,7 +64,7 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
-  -- physics.setDrawMode("hybrid")
+  physics.setDrawMode("hybrid")
 
   -- Called when the scene's view does not exist.
   --
@@ -124,7 +124,7 @@ function scene:create( event )
   -- create a physics body
   local playBtnBody = display.newRect(display.contentCenterX, display.contentHeight - 125, 125, 60)
   playBtnBody.alpha = 0
-  physics.addBody( playBtnBody, "static", { density = 1, friction = 1} )
+  physics.addBody( playBtnBody, "static", { density = 1, friction = 1 } )
 
   -- load the ball
   local ball = display.newImageRect( "graphics/ball.png", 60, 60 )
@@ -132,16 +132,18 @@ function scene:create( event )
   ball.y = 60
 
   local function addBodyToBall()
-    physics.addBody( ball, { bounce = 1, friction = 0.6, density = 1.0, radius = 10.0})
+    physics.addBody( ball, { bounce = 0.5, friction = 0.5, density = 1.0, radius = 20.0})
+    ball:applyAngularImpulse( math.random ( -5 , 5 ) )
   end
 
   local function onCollision(self, event)
     local function goUp()
       if playBtn ~= nil then
-        transition.to( playBtn, { time=150, y=playBtn.y - 5} )
+        transition.to( playBtn, { time = 200, y = playBtn.y - 15 } )
+        ball:applyLinearImpulse( 0, -1, ball.x, ball.y )
       end
     end
-    transition.to( playBtn, { time=150, y=playBtn.y + 5, onComplete=goUp, transition=easing.outExpo } )
+    transition.to( playBtn, { time = 50, y=playBtn.y + 15, onComplete=goUp, transition=easing.outExpo } )
   end
 
   ball.collision = onCollision

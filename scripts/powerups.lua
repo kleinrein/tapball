@@ -21,7 +21,7 @@ local coinBlazeGroup = nil
 local gemPowers = { "SpikedEnemy", "CoinBlaze", "CoinRain" }
 
 -- sounds
-local coinSound = audio.loadSound( "audio/coin.mp3" )
+local audiohandler = require( "scripts.audiohandler" )
 
 -- flags
 local isOver = false
@@ -218,7 +218,7 @@ function spawnExtraCoin(x)
   local function hitCoin(event)
     if event.other.name == 'ball' then
       -- play coin sound
-      audio.play(coinSound)
+      audiohandler.coin()
 
       updateScore(5)
       transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
