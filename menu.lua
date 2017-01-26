@@ -64,7 +64,7 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
-  physics.setDrawMode("hybrid")
+  -- physics.setDrawMode("hybrid")
 
   -- Called when the scene's view does not exist.
   --
@@ -79,9 +79,12 @@ function scene:create( event )
   background.y = 0 + display.screenOriginY
 
   -- create a logo
-  local titleLogo = display.newImageRect( "graphics/logo.png", 180, 25 )
+  local titleLogo = display.newImageRect( "graphics/logo.png", 170, 25 )
   titleLogo.x = display.contentCenterX
   titleLogo.y = 150
+  titleLogo.alpha = 0
+
+  transition.to( titleLogo, { time = 1500, xScale = 1.2, yScale = 1.1, alpha = 1 } )
 
   -- create a widget button (which will loads level1.lua on release)
   playBtn = widget.newButton{
@@ -110,7 +113,8 @@ function scene:create( event )
   soundBtn:addEventListener( "touch", onSoundBtnTouch )
 
   -- show highscore
-  local highscore = system.getPreference( "app", "highscore", "number" )
+  local highscore = system.getPreference( "app", "highscore_level1", "number" )
+  if highscore == nil then highscore = 0 end
 
   local highScoreText = display.newText {
       text = "Highscore: " .. tostring(highscore),
@@ -122,7 +126,7 @@ function scene:create( event )
     }
 
   -- create a physics body
-  local playBtnBody = display.newRect(display.contentCenterX, display.contentHeight - 125, 125, 60)
+  local playBtnBody = display.newRect(display.contentCenterX, display.contentHeight - 125, 135, 35)
   playBtnBody.alpha = 0
   physics.addBody( playBtnBody, "static", { density = 1, friction = 1 } )
 
@@ -159,6 +163,9 @@ function scene:create( event )
   sceneGroup:insert( playBtnBody )
   sceneGroup:insert( soundBtn )
   sceneGroup:insert( highScoreText )
+
+  -- ball in front
+  ball:toFront()
 end
 
 function scene:show( event )

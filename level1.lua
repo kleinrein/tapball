@@ -486,7 +486,7 @@ function lostDialog()
 
   -- score label
   -- show highscore
-  local highscore = system.getPreference( "app", "highscore", "number" )
+  local highscore = system.getPreference( "app", "highscore_level1", "number" )
   local appPreferences = {
     highscore = score
   }
@@ -494,6 +494,7 @@ function lostDialog()
   local function newHighScore()
     local newHighScore = display.newImageRect( "graphics/lost-dialog-new-highscore.png", 200, 20 )
     newHighScore.x, newHighScore.y = display.contentCenterX, display.contentCenterY - 125
+    transition.blink(newHighScore)
 
     dialogGroup:insert( newHighScore )
   end
