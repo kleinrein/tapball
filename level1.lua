@@ -10,6 +10,10 @@ local widget = require( "widget" )
 local physics = require( "physics" )
 local scene = composer.newScene()
 
+-- master group
+local game = display.newGroup()
+game.x = 0
+
 -- other files
 local powerups
 local audiohandler = require( "scripts.audiohandler" )
@@ -71,7 +75,7 @@ function spawnCoin()
   coin = display.newSprite( coinSheet, sequenceData )
   math.random()
   coin.x = math.random ( 10 , display.contentWidth - 10)
-  coin.y = math.random (display.contentHeight - 150)
+  coin.y = math.random (display.contentHeight - 450)
 
   coin:play()
 
@@ -109,6 +113,8 @@ function spawnCoin()
 
   -- add coin to table for tracking purposes
   coinTable[#coinTable+1] = coin
+
+  game:insert(coin)
 end
 
 function spawnGem()
@@ -140,14 +146,14 @@ function spawnGem()
   timer.performWithDelay( 50, addBodyToGem )
 
   gem.x = math.random ( 10 , display.contentWidth - 10)
-  gem.y = math.random ( display.contentHeight - 150 )
+  gem.y = math.random ( display.contentHeight - 450 )
 
   gem:play()
 
   local function hitGem(event)
     if event.other.name == 'ball' then
       display.remove( gem )
-      timer.performWithDelay( 100, powerups.randGemPower() )
+      timer.performWithDelay( 100, powerups.randGemPower(game) )
     end
   end
 
@@ -156,6 +162,8 @@ function spawnGem()
 
   -- add to gemTable
   gemTable[#gemTable+1] = gem
+
+  game:insert(gem)
 end
 
 
@@ -188,10 +196,11 @@ function scene:create( event )
 
   -- make a ball (off-screen), position it, and rotate slightly
   ball = display.newImageRect( "graphics/ball.png", 80, 80 )
-  ball.x, ball.y = 160, -100
+  ball.x, ball.y = math.random(display.contentWidth - 50), -100
   ball.name = "ball"
   ball.linearDamping = 10
   ball.angularDamping = 10
+  ball.rotation = math.random(-5, 5)
   
   -- add physics to the ball
   physics.addBody( ball, { bounce = 0.75, friction = 0.3, density = 1.0, radius = 40})
@@ -222,8 +231,17 @@ function scene:create( event )
 
   -- create right and left collision boxes
   collisionLeft = display.newRect( 0, display.contentCenterY, 0, display.actualContentHeight + 1000 )
-  collisionRight = display.newRect( display.actualContentWidth, display.contentCenterY, 0, display.actualContentHeight )
-  collisionTop = display.newRect( display.contentCenterX, -50, display.actualContentWidth, 1 )
+  collisionRight = display.newRect( display.actualContentWidth, display.contentCenterY, 0, display.actualContentHeight + 1000 )
+  collisionTop = display.newRect( display.contentCenterX, -500, display.actualContentWidth, 0 )
+
+  local aurora = display.newImageRect("graphics/aurora.png", display.contentWidth, 500)
+  aurora.x, aurora.y = display.contentCenterX, -600
+
+  aurora.fill.effect = "filter.linearWipe"
+ 
+  aurora.fill.effect.direction = { 0, 1 }
+  aurora.fill.effect.smoothness = 1
+  aurora.fill.effect.progress = 0.5
 
   physics.addBody( collisionRight, "static", { density = 0, friction = 0, bounce = 0 } )
   physics.addBody( collisionLeft, "static", { density = 0, friction = 0, bounce = 0 })
@@ -234,16 +252,17 @@ function scene:create( event )
 
   -- all display objects must be inserted into group
   sceneGroup:insert( background )
-  sceneGroup:insert( grass)
-  sceneGroup:insert( ball )
-  sceneGroup:insert( collisionLeft )
-  sceneGroup:insert( collisionRight )
-  sceneGroup:insert( collisionTop )
+  game:insert( grass)
+  game:insert( ball )
+  game:insert( collisionLeft )
+  game:insert( collisionRight )
+  game:insert( collisionTop )
+  game:insert( aurora )
   
   -- add top body after some time
   local function addTopBody()
     physics.addBody ( collisionTop, "static", { density = 0, bounce = 0, friction = 0 } )
-    sceneGroup:insert( collisionTop )
+    -- game:insert( collisionTop )
   end
 
   timer.performWithDelay( 750, addTopBody )
@@ -297,6 +316,7 @@ end
 
 
 function pushBall( event )
+  if (ball ~= nil) then
     local force
     local xMin, xMax = event.x - 10, event.x + 10
 
@@ -318,6 +338,7 @@ function pushBall( event )
     
     audiohandler.jump()
     updateScore(1)
+    end
   end
 
 function scene:hide( event )
@@ -344,6 +365,8 @@ function scene:destroy( event )
   -- e.g. remove display objects, remove touch listeners, save state, etc.
   local sceneGroup = self.view
 
+  game:removeSelf()
+
   score = nil
   lost = nil
 
@@ -351,8 +374,6 @@ function scene:destroy( event )
   grass = nil
 
   -- remove ball and top collision
-  physics.removeBody(ball)
-  physics.removeBody(collisionTop)
   display:remove(ball)
   ball = nil
 
@@ -399,6 +420,7 @@ function endgame()
     lost = true
     for id, value in pairs(timer._runlist) do
       timer.cancel(value)
+      Runtime:removeEventListener( "enterFrame", moveCamera )
     end
     -- show you lost dialog
     lostDialog()
@@ -488,7 +510,7 @@ function lostDialog()
   -- show highscore
   local highscore = system.getPreference( "app", "highscore_level1", "number" )
   local appPreferences = {
-    highscore = score
+    highscore_level1 = score
   }
 
   local function newHighScore()
@@ -530,6 +552,16 @@ function lostDialog()
   dialogGroup:insert( yourScore )
 end
 
+local function moveCamera()
+  
+  if ball == nil then
+    Runtime:removeEventListener( "enterFrame", onFrame )
+  end
+  if (ball ~= nil and ball.y < 200) then
+    game.y = -ball.y + 200
+  end
+end
+
 ---------------------------------------------------------------------------------
 
 -- Listener setup
@@ -537,6 +569,8 @@ scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
+
+Runtime:addEventListener( "enterFrame", moveCamera )
 
 -----------------------------------------------------------------------------------------
 

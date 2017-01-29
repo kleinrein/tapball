@@ -27,8 +27,11 @@ local audiohandler = require( "scripts.audiohandler" )
 local isOver = false
 local isCoinBlazeActive = false
 
-function powerups.randGemPower()
+local gameGr
+
+function powerups.randGemPower(game)
   isOver = false
+  gameGr = game
   local randGemPower = math.random( #gemPowers )
   local gemPower = gemPowers[randGemPower]
   chooseGemPowers( gemPower )
@@ -38,7 +41,7 @@ end
 --[[
     chooseGemPowers
 --]]
-function chooseGemPowers( gemPower )
+function chooseGemPowers( gemPower, game )
 
   if isCoinBlazeActive == true then
       -- only spawn enemies if coinblaze is active
@@ -71,6 +74,7 @@ function spawnEnemy()
 
   local spikeball = nil
 
+  -- ball touches the spikeball
   local function spiked(event)
     if event.other.name == "ball" then
       explodeBall()
@@ -90,7 +94,7 @@ function spawnEnemy()
   local function showSpikeball()
     if isOver ~= true then
       spikeball = display.newImageRect( "graphics/spike-ball.png", 25, 25 )
-      spikeball.x, spikeball.y = spikeballX, -10
+      spikeball.x, spikeball.y = spikeballX, display.contentHeight - 550
       spikeball.name = "spikeball"
 
       physics.addBody( spikeball, { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
@@ -210,7 +214,7 @@ function spawnExtraCoin(x)
     coin.y = math.random(-1000, -700 )
   else
     coin.x = math.random ( 10 , display.contentWidth - 10 )
-    coin.y = math.random( 100, display.contentHeight - 100 )
+    coin.y = math.random( 100, display.contentHeight + 450 )
   end
 
   coin:play()
@@ -221,7 +225,7 @@ function spawnExtraCoin(x)
       audiohandler.coin()
 
       updateScore(5)
-      transition.to( coin, { time=50, xScale = 1.5, yScale = 1.5 } )
+      transition.to( coin, { time = 50, xScale = 1.5, yScale = 1.5 } )
       transition.dissolve( coin )
 
       display.remove( coin )
@@ -230,7 +234,7 @@ function spawnExtraCoin(x)
 
   local function addBodyToCoin()
     if x ~= nil then
-      physics.addBody( coin, { isSensor = true, friction = 0.3, density = .001, radius = 10}  )
+      physics.addBody( coin, { isSensor = true, friction = 0.3, density = .001, radius = 10 }  )
     else
       physics.addBody( coin, "static", { isSensor = true, radius = 10} )
     end
@@ -246,6 +250,8 @@ function spawnExtraCoin(x)
     coinBlazeTable[#coinBlazeTable+1] = coin
   end
   
+  -- add to game group
+  gameGr:insert( coin )
 end
 
 function displayPowerText(text)

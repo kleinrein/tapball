@@ -10,7 +10,7 @@ application =
 		width = 320,
 		height = 480, 
 		scale = "letterBox",
-		fps = 60,
+		fps = 25,
 		
 		--[[
 		imageSuffix =

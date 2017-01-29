@@ -64,7 +64,7 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
-  -- physics.setDrawMode("hybrid")
+  physics.setDrawMode("hybrid")
 
   -- Called when the scene's view does not exist.
   --
