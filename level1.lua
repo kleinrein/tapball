@@ -196,16 +196,19 @@ function scene:create( event )
 
   -- make a ball (off-screen), position it, and rotate slightly
   ball = display.newImageRect( "graphics/ball.png", 80, 80 )
-  ball.x, ball.y = math.random(display.contentWidth - 50), -100
+  ball.x, ball.y = math.random(display.contentWidth - 50), 100
   ball.name = "ball"
   ball.linearDamping = 10
-  ball.angularDamping = 10
+  ball.angularAcceleration = 1.05
+  ball.angularMax = 10
+  ball.linearDamping = 0.5
+  ball.angularDamping = 0.9
   ball.rotation = math.random(-5, 5)
   
   -- add physics to the ball
   physics.addBody( ball, { bounce = 0.75, friction = 0.3, density = 1.0, radius = 40})
 
-  ball:addEventListener("tap", pushBall)
+  ball:addEventListener("touch", pushBall)
 
   -- create a grass object and add physics (with custom shape)
   grass = display.newImageRect( "graphics/grass.png", screenW, 60 )
@@ -230,15 +233,14 @@ function scene:create( event )
   physics.addBody( grass, "static", { density = 1, friction=0.3, shape=grassShape } )
 
   -- create right and left collision boxes
-  collisionLeft = display.newRect( 0, display.contentCenterY, 0, display.actualContentHeight + 1000 )
-  collisionRight = display.newRect( display.actualContentWidth, display.contentCenterY, 0, display.actualContentHeight + 1000 )
+  collisionLeft = display.newRect( 0, display.contentCenterY, 0, display.actualContentHeight * 5000 )
+  collisionRight = display.newRect( display.actualContentWidth, display.contentCenterY, 0, display.actualContentHeight * 5000 )
   collisionTop = display.newRect( display.contentCenterX, -500, display.actualContentWidth, 0 )
 
-  local aurora = display.newImageRect("graphics/aurora.png", display.contentWidth, 500)
-  aurora.x, aurora.y = display.contentCenterX, -600
+  local aurora = display.newImageRect("graphics/aurora.png", display.contentWidth, 600)
+  aurora.x, aurora.y = display.contentCenterX, -500
 
   aurora.fill.effect = "filter.linearWipe"
- 
   aurora.fill.effect.direction = { 0, 1 }
   aurora.fill.effect.smoothness = 1
   aurora.fill.effect.progress = 0.5
@@ -250,24 +252,23 @@ function scene:create( event )
   ball.collision = onCollision
   ball:addEventListener( "collision" )
 
+  -- lay bricks
+  --local brickBuilder = require( "scripts.brickbuilder" )
+  --brickBuilder.layBricks(game)
+
   -- all display objects must be inserted into group
   sceneGroup:insert( background )
   game:insert( grass)
-  game:insert( ball )
   game:insert( collisionLeft )
   game:insert( collisionRight )
   game:insert( collisionTop )
   game:insert( aurora )
-  
-  -- add top body after some time
-  local function addTopBody()
-    physics.addBody ( collisionTop, "static", { density = 0, bounce = 0, friction = 0 } )
-    -- game:insert( collisionTop )
-  end
+  game:insert( ball )
 
-  timer.performWithDelay( 750, addTopBody )
+  -- add top to body
+  physics.addBody ( collisionTop, "static", { density = 0, bounce = 0, friction = 0 } )
+  game:insert( collisionTop )
 
-  -- enemy test
 end
 
 function scene:show( event )
@@ -316,7 +317,7 @@ end
 
 
 function pushBall( event )
-  if (ball ~= nil) then
+  if (ball ~= nil and event.phase == "began") then
     local force
     local xMin, xMax = event.x - 10, event.x + 10
 
