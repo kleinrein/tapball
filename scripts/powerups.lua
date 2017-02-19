@@ -97,7 +97,7 @@ function spawnEnemy()
       spikeball.x, spikeball.y = spikeballX, display.contentHeight - 550
       spikeball.name = "spikeball"
 
-      physics.addBody( spikeball, { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
+      physics.addBody( spikeball, "dynamic", { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
       spikeball:addEventListener("collision", spiked)
 
       -- add to group

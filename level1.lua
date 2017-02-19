@@ -378,7 +378,6 @@ function scene:destroy( event )
   display:remove(ball)
   ball = nil
 
-  spikeball = nil
   background = nil
   grassShape = nil
   scoreTxt:removeSelf()
@@ -408,12 +407,6 @@ function scene:destroy( event )
   if coin ~= nil then display.remove(coin) end
 end
 
-function explodeBall()
-  transition.to( ball, { time=300, xScale= 1.5, yScale=1.5, alpha=0 } )
-
-  endgame()
-end
-
 function endgame()
   print( "endgame " .. tostring(lost) )
 
@@ -426,6 +419,15 @@ function endgame()
     -- show you lost dialog
     lostDialog()
   end
+end
+
+function explodeBall()
+  print("xplode ball")
+  local function xplode(event)
+    transition.to( ball, { time=300, xScale= 1.5, yScale=1.5, alpha=0 } )
+    timer.performWithDelay(500, endgame)
+  end
+  timer.performWithDelay(800, xplode)
 end
 
 function lostDialog()
