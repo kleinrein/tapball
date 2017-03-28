@@ -188,7 +188,7 @@ function scene:create( event )
   -- the physical screen will likely be a different shape than our defined content area
   -- since we are going to position the background from it's top, left corner, draw the
   -- background at the real top, left corner.
-  local background = display.newImageRect( "graphics/level1-bg.png", display.actualContentWidth, display.actualContentHeight )
+  background = display.newImageRect( "graphics/level1-bg.png", display.actualContentWidth, display.actualContentHeight + 200 )
   background.anchorX = 0
   background.anchorY = 0
   background.x = 0 + display.screenOriginX
@@ -556,12 +556,12 @@ function lostDialog()
 end
 
 local function moveCamera()
-  
   if ball == nil then
     Runtime:removeEventListener( "enterFrame", onFrame )
   end
   if (ball ~= nil and ball.y < 200) then
     game.y = -ball.y + 200
+    background.y = ball.y / 10 - 200
   end
 end
 
