@@ -13,6 +13,7 @@ local prefSound = system.getPreference( "app", "prefSound", "boolean" )
 local jumpSound = audio.loadSound( "./audio/jump.mp3" )
 local coinSound = audio.loadSound( "./audio/coin.mp3" )
 local gameOverSound = audio.loadSound( "./audio/gameover.mp3" )
+local introSound = audio.loadSound( "./audio/intro.mp3" )
 
 function audiohandler.update()
   prefSound = system.getPreference( "app", "prefSound", "boolean" )
@@ -34,6 +35,12 @@ end
 function audiohandler.gameover()
   if prefSound == true then
     audio.play( gameOverSound )
+  end
+end
+
+function audiohandler.intro()
+  if prefSound == true then
+    audio.play( introSound )
   end
 end
 

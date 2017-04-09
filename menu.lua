@@ -13,6 +13,7 @@ local widget = require "widget"
 
 -- local scripts
 local btnanimations = require( "scripts.btnanimations" )
+local audiohandler = require( "scripts.audiohandler" )
 
 --------------------------------------------
 

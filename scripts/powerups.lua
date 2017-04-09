@@ -94,14 +94,17 @@ function spawnEnemy()
   local function showSpikeball()
     if isOver ~= true then
       spikeball = display.newImageRect( "graphics/spike-ball.png", 25, 25 )
-      spikeball.x, spikeball.y = spikeballX, display.contentHeight - 550
+      spikeball.x, spikeball.y = spikeballX, math.random(-1000, -700 )
       spikeball.name = "spikeball"
 
-      physics.addBody( spikeball, "dynamic", { bounce = 0.6, friction = 0.3, density = 0.2, radius = 10})
+      physics.addBody( spikeball, { isSensor = true, friction = 0.3, density = .001, radius = 10 })
       spikeball:addEventListener("collision", spiked)
 
       -- add to group
       spikeBallTable[#spikeBallTable+1] = spikeball
+
+      -- add to game group
+      gameGr:insert( spikeball )
     end
   end
 
@@ -255,12 +258,12 @@ function spawnExtraCoin(x)
 end
 
 function displayPowerText(text)
-local paint = {
-    type = "gradient",
-    color1 = { 0, 0, 1, 1 },
-    color2 = { 0, 1, 0, 1 },
-    direction = "down"
-}
+  local paint = {
+      type = "gradient",
+      color1 = { 0, 0, 1, 1 },
+      color2 = { 0, 1, 0, 1 },
+      direction = "down"
+  }
   local powerText = display.newText( text , display.contentCenterX, 200, native.systemFont, 22 )
   powerText:setFillColor( paint )
 

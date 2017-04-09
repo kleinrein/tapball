@@ -281,7 +281,6 @@ function scene:show( event )
 
   -- update audio pref
   audiohandler.update()
-  
   powerups = nil
 
   -- init powerups
@@ -422,12 +421,11 @@ function endgame()
 end
 
 function explodeBall()
-  print("xplode ball")
   local function xplode(event)
     transition.to( ball, { time=300, xScale= 1.5, yScale=1.5, alpha=0 } )
     timer.performWithDelay(500, endgame)
   end
-  timer.performWithDelay(800, xplode)
+  timer.performWithDelay(1, xplode)
 end
 
 function lostDialog()
