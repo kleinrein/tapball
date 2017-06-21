@@ -19,6 +19,7 @@ local audiohandler = require( "scripts.audiohandler" )
 
 -- forward declarations and other locals
 local playBtn
+local myBallBtn
 local soundBtn
 
 local imgSoundOn
@@ -30,6 +31,14 @@ local function onPlayBtnRelease()
   composer.gotoScene( "level1", "crossFade", 250 )
 
   return true -- indicates successful touch
+end
+
+local function onMyBallBtnRelease()
+
+end
+
+local function onMyBallBtnTouch( event )
+  btnanimations.shrinkBtnAnimation( event, myBallBtn )
 end
 
 local function onPlayBtnTouch( event )
@@ -65,7 +74,7 @@ function scene:create( event )
   physics.start()
   physics.pause()
   physics.setScale( 60 )
-  physics.setDrawMode("hybrid")
+  --physics.setDrawMode("hybrid")
 
   -- Called when the scene's view does not exist.
   --
@@ -101,6 +110,19 @@ function scene:create( event )
   playBtn.y = display.contentHeight - 125
   playBtn.name = "playBtn"
   playBtn:addEventListener( "touch", onPlayBtnTouch )
+
+  myBallBtn = widget.newButton{
+    label="",
+    labelAlign="center",
+    labelColor = { default={255}, over={128} },
+    defaultFile="graphics/my-ball-btn.png",
+    overFile="graphics/my-ball-btn.png",
+    width=140, height=40,
+    onRelease = onMyBallBtnRelease -- event listener function
+  }
+  myBallBtn.x, myBallBtn.y = display.contentCenterX, display.contentHeight - 70
+  myBallBtn.name = "myBallBtn"
+  myBallBtn:addEventListener( "touch", onMyBallBtnTouch )
 
   -- create sound on & off buttons
   imgSoundOn = { type="image", filename="graphics/btn-sound-on.png" }
@@ -160,6 +182,7 @@ function scene:create( event )
   sceneGroup:insert( background )
   sceneGroup:insert( titleLogo )
   sceneGroup:insert( playBtn )
+  sceneGroup:insert( myBallBtn )
   sceneGroup:insert( ball )
   sceneGroup:insert( playBtnBody )
   sceneGroup:insert( soundBtn )
