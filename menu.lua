@@ -19,7 +19,7 @@ local audiohandler = require( "scripts.audiohandler" )
 
 -- forward declarations and other locals
 local playBtn
-local myBallBtn
+local shareBtn
 local soundBtn
 
 local imgSoundOn
@@ -33,12 +33,11 @@ local function onPlayBtnRelease()
   return true -- indicates successful touch
 end
 
-local function onMyBallBtnRelease()
+local function onShareBtnRelease() 
+  -- show share btn
+  native.showPopup( "social" )
 
-end
-
-local function onMyBallBtnTouch( event )
-  btnanimations.shrinkBtnAnimation( event, myBallBtn )
+  return true
 end
 
 local function onPlayBtnTouch( event )
@@ -111,18 +110,18 @@ function scene:create( event )
   playBtn.name = "playBtn"
   playBtn:addEventListener( "touch", onPlayBtnTouch )
 
-  myBallBtn = widget.newButton{
+  -- create a widget button (which wil show the share menu)
+  shareBtn = widget.newButton{
     label="",
     labelAlign="center",
     labelColor = { default={255}, over={128} },
-    defaultFile="graphics/my-ball-btn.png",
-    overFile="graphics/my-ball-btn.png",
+    defaultFile="graphics/share-btn.png",
+    overFile="graphics/share-btn.png",
     width=140, height=40,
-    onRelease = onMyBallBtnRelease -- event listener function
+    onRelease = onShareBtnRelease -- event listener function
   }
-  myBallBtn.x, myBallBtn.y = display.contentCenterX, display.contentHeight - 70
-  myBallBtn.name = "myBallBtn"
-  myBallBtn:addEventListener( "touch", onMyBallBtnTouch )
+  shareBtn.x = display.contentCenterX
+  shareBtn.y = display.contentHeight - 60
 
   -- create sound on & off buttons
   imgSoundOn = { type="image", filename="graphics/btn-sound-on.png" }
@@ -182,7 +181,7 @@ function scene:create( event )
   sceneGroup:insert( background )
   sceneGroup:insert( titleLogo )
   sceneGroup:insert( playBtn )
-  sceneGroup:insert( myBallBtn )
+  sceneGroup:insert( shareBtn )
   sceneGroup:insert( ball )
   sceneGroup:insert( playBtnBody )
   sceneGroup:insert( soundBtn )
@@ -214,10 +213,6 @@ function scene:hide( event )
   local phase = event.phase
 
   if event.phase == "will" then
-    -- Called when the scene is on screen and is about to move off screen
-    --
-    -- INSERT code here to pause the scene
-    -- e.g. stop timers, stop animation, unload sounds, etc.)
   elseif phase == "did" then
     -- Called when the scene is now off screen
   end
@@ -225,11 +220,6 @@ end
 
 function scene:destroy( event )
   local sceneGroup = self.view
-
-  -- Called prior to the removal of scene's "view" (sceneGroup)
-  --
-  -- INSERT code here to cleanup the scene
-  -- e.g. remove display objects, remove touch listeners, save state, etc.
 
   if playBtn then
     playBtn:removeSelf() -- widgets must be manually removed

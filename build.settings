@@ -21,6 +21,14 @@ settings =
 		android = { "Icon.png", "Icon-Small-*.png", "Icon*@2x.png", },
 	},
 
+	plugins =
+    {
+        ["CoronaProvider.native.popup.social"] =
+        {
+            publisherId = "com.coronalabs"
+        },
+    },
+
 	--
 	-- iOS Section
 	--

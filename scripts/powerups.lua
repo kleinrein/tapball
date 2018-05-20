@@ -264,14 +264,14 @@ function displayPowerText(text)
       color2 = { 0, 1, 0, 1 },
       direction = "down"
   }
-  local powerText = display.newText( text , display.contentCenterX, 200, native.systemFont, 22 )
+  local powerText = display.newText( text , display.contentCenterX, 200, native.systemFont, 26 )
   powerText:setFillColor( paint )
 
   local function removePowerText()
     display.remove( powerText )
   end
 
-  transition.scaleTo( powerText, { xScale = 3, yScale = 3, alpha=0, time = 600, transition = easing.inOutExpo, onComplete=removePowerText } )
+  transition.scaleTo( powerText, { xScale = 3, yScale = 3, alpha=0, time = 750, transition = easing.inOutExpo, onComplete=removePowerText } )
 end
 
 function powerups.clearDisplay()

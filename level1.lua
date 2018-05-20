@@ -335,6 +335,9 @@ function pushBall( event )
 
     -- apply gravity angular impulse
     ball:applyAngularImpulse( force )
+
+    -- apply torgue (rotate)
+    ball:applyTorque( force )
     
     audiohandler.jump()
     updateScore(1)
@@ -386,7 +389,7 @@ function scene:destroy( event )
   package.loaded[physics] = nil
   physics = nil
 
-  -- dispose audio
+  -- dispose audioa
   audiohandler.dispose()
 
   -- remove coins
