@@ -301,7 +301,7 @@ function scene:show( event )
       x = 60,
       y = 0,
       font = "pixelsplitter.ttf",
-      fontSize = 12,
+      fontSize = 14,
       align = "left"
     }
 
