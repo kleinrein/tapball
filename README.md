@@ -1,6 +1,6 @@
-<img src="https://github.com/kleinrein/tapball/blob/master/logo.png" width="200">
+<img src="https://github.com/kleinrein/tapball/blob/master/logo.png" width="300">
 
-# Tapball
+# 
 
 <img src="https://thumbs.gfycat.com/DistantUnknownCaracal-size_restricted.gif" width="350">
 
